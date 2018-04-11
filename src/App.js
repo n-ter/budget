@@ -5,7 +5,7 @@ import moment from 'moment';
 import styled from 'styled-components';
 import Expanse from './Expanse';
 import Incomes from './Incomes';
-import {findLastIndex} from 'lodash';
+
 
 
 const DateButton = styled.button`
@@ -41,7 +41,7 @@ const Nav = styled.nav`
 `;
 
 const Table = styled.table`
-  width: 300px;
+  width: 450px;
   text-align: right;
   padding-top: 30px;
   margin: 0 auto;
@@ -80,18 +80,14 @@ class App extends Component {
       sum: sum,
     };
 
-    const index = findLastIndex(transactions, ({date}) => {
-      const transactionDate = moment(date, 'DD.MM.YYYY');
-      return (
-        TodayDate.isBefore(transactionDate, 'day') ||
-        TodayDate.isSame(transactionDate, 'day')
-        );
-      });
+    const newTransactions = [ ... transactions, newTransaction];
 
-    const newTransactions = [ ... transactions];
-    newTransactions.splice(
-      index === -1 ? transactions.length : index, 0, newTransaction,
-      );
+    newTransactions.sort((a,b) => {
+      const aDate = moment(a.date, 'DD.MM.YYYY');
+      const bDate = moment(b.date, 'DD.MM.YYYY');
+      return aDate.isAfter(bDate);
+    })
+      
     this.setState({transactions: newTransactions});
     };
   
