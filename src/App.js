@@ -3,6 +3,9 @@ import logo from './logo.svg';
 import './App.css';
 import moment from 'moment';
 import styled from 'styled-components';
+import Expanse from './Expanse';
+import Incomes from './Incomes';
+import {findLastIndex} from 'lodash';
 
 
 const DateButton = styled.button`
@@ -37,6 +40,13 @@ const Nav = styled.nav`
   padding: 40px 0 15px;
 `;
 
+const Table = styled.table`
+  width: 300px;
+  text-align: right;
+  padding-top: 30px;
+  margin: 0 auto;
+`;
+
 class App extends Component {
 
   constructor(props) {
@@ -45,6 +55,7 @@ class App extends Component {
     this.state = {
       date: moment(),
       navSelected: 'expanse',
+      transactions: []
     };
   }
 
@@ -60,8 +71,33 @@ class App extends Component {
      this.setState({navSelected: event.target.getAttribute('name')});
   };
 
+  handleSubmitTransaction = (sum, category) => {
+    const {date: TodayDate, transactions} = this.state;
+
+    const newTransaction = {
+      date: TodayDate.format('DD.MM.YYYY'),
+      category: category,
+      sum: sum,
+    };
+
+    const index = findLastIndex(transactions, ({date}) => {
+      const transactionDate = moment(date, 'DD.MM.YYYY');
+      return (
+        TodayDate.isBefore(transactionDate, 'day') ||
+        TodayDate.isSame(transactionDate, 'day')
+        );
+      });
+
+    const newTransactions = [ ... transactions];
+    newTransactions.splice(
+      index === -1 ? transactions.length : index, 0, newTransaction,
+      );
+    this.setState({transactions: newTransactions});
+    };
+  
+
   render() {
-    const {date, navSelected} = this.state;
+    const {date, navSelected, transactions} = this.state;
 
     return  (
       <section>
@@ -82,6 +118,26 @@ class App extends Component {
               Доходы
             </Link>
           </Nav>
+
+          {navSelected === 'expanse' ? (
+          <Expanse onSubmit={this.handleSubmitTransaction} />
+          ) : (
+          <Incomes onSubmit={this.handleSubmitTransaction} />
+          )}
+
+          <Table>
+          <tbody>
+            {transactions
+              .filter(({date: transactionDate}) => moment(transactionDate, 'DD.MM.YYYY').isSame(date, 'month'))
+              .map(({date, sum, category}, index) => (
+                <tr key={index}>
+                  <td>{date}</td>
+                  <td>{sum} руб</td>
+                  <td>{category}</td>
+                </tr>
+              ))}
+          </tbody>
+          </Table>
         </main>
       </section>
     );
