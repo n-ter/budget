@@ -110,7 +110,46 @@ class App extends Component {
     }
 
 
-    onToday = () => {};
+    onToday = () => {
+      const {transactions, date} = this.state;
+
+      const currentMonthTransactions = transactions.filter(
+        ({date:transactionDate}) =>
+        moment(transactionDate, 'DD.MM.YYYY').isSame(date, 'month'),
+        );
+
+      /*подсчёт средств на каждый день
+      const dailyMoney =
+      currentMonthTransactions.reduce(
+        (acc, transaction) => 
+        transaction.sum > 0 ? transaction.sum + acc : acc,
+      0,
+      ) / moment(date).daysInMonth();*/
+
+      /*const transactionsBeforeThisDay = currentMonthTransactions.filter(
+        ({date: transactionDate}) =>
+        moment(transactionDate, 'DD.MM.YYYY').isBefore(date, 'date') ||
+        moment(transactionDate, 'DD.MM.YYYY').isSame(date, 'date'),
+        );*/
+
+      /*const expanseBeforeToday = transactionsBeforeThisDay.reduce(
+        (acc, {sum}) => (sum < 0 ? acc + sum : acc),
+        0,
+        );*/
+      const expanseBeforeToday = currentMonthTransactions.reduce(
+        (acc, {sum}) => (sum < 0 ? acc + sum : acc),
+        0,
+        );
+      const expanseToday = currentMonthTransactions.reduce(
+        (acc, {sum}) => (sum > 0 ? acc + sum : acc),
+        0,
+        );
+
+        /*const incomeBeforeToday = date.date() * dailyMoney;*/
+
+       /* return incomeBeforeToday + expanseBeforeToday;*/
+        return expanseBeforeToday + expanseToday;
+    };
 
 
   render() {
@@ -119,13 +158,14 @@ class App extends Component {
     return  (
       <section>
         <header>
-          <h1>Реактивный бюджет</h1>
+          <h1>Реактивный бюджет на месяц</h1>
+          <p>В этом месяце осталось средств: {this.onToday()} рублей</p>
           <DateLine>
             <p>{date.format('DD.MM.YYYY')}</p>
             <DateButton onClick={this.handleSubtractDay}>-</DateButton>
             <DateButton onClick={this.handleAddDay}>+</DateButton>
           </DateLine>
-          <p>На сегодня: {this.onToday()} рублей</p>
+          
         </header>
         <main>
           <Nav>
