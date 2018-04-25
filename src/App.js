@@ -52,11 +52,21 @@ class App extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      date: moment(),
-      navSelected: 'expanse',
-      transactions: []
+    let storageState = localStorage.getItem('state');
+    let initState;
+
+    if (storageState != null) {
+      storageState = JSON.parse(storageState);
+      initState = { ... storageState, date: moment(storageState.date)};
+    } else {
+      initState = {
+        date: moment(),
+        navSelected: 'incomes',
+        transactions: [],
     };
+  }
+
+    this.state = initState;
   }
 
   handleAddDay = () => {
@@ -91,6 +101,17 @@ class App extends Component {
     this.setState({transactions: newTransactions});
     };
   
+    componentDidUpdate() {
+      const {date} = this.state;
+      localStorage.setItem(
+        'state',
+        JSON.stringify({ ... this.state, date: date.format()}),
+        );
+    }
+
+
+    onToday = () => {};
+
 
   render() {
     const {date, navSelected, transactions} = this.state;
@@ -104,6 +125,7 @@ class App extends Component {
             <DateButton onClick={this.handleSubtractDay}>-</DateButton>
             <DateButton onClick={this.handleAddDay}>+</DateButton>
           </DateLine>
+          <p>На сегодня: {this.onToday()} рублей</p>
         </header>
         <main>
           <Nav>
